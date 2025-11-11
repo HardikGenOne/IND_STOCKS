@@ -32,10 +32,11 @@ router.post("/signup", async (req, res) => {
 
     res.cookie("access_token", token, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false,  // change to true when deployed (https)
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    
 
     res.status(201).json({ user });
   } catch (err) {
@@ -64,10 +65,11 @@ router.post("/login", async (req, res) => {
 
     res.cookie("access_token", token, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    
 
     res.json({ user: { id: user.id, username: user.username, email: user.email } });
   } catch {
