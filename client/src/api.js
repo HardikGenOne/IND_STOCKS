@@ -1,9 +1,9 @@
 import axios from "axios";
 
 export const API = axios.create({
-  baseURL: "http://localhost:8080/api",
+  // baseURL: "http://localhost:8080/api",
 
-  // baseURL: "https://ind-stocks-1.onrender.com/api",
+  baseURL: "https://ind-stocks-1.onrender.com/api",
   withCredentials: true, // send cookies
 });
 
