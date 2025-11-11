@@ -1,9 +1,9 @@
 import axios from "axios";
 
 export const API = axios.create({
-  baseURL: "http://localhost:8080/api",
-  //https://foodify-server-9iun.onrender.com
-  // baseURL: "https://foodify-server-9iun.onrender.com/api",
+  // baseURL: "http://localhost:8080/api",
+
+  baseURL: "https://ind-stocks-1.onrender.com/api",
   withCredentials: true, // send cookies
 });
 
