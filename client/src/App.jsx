@@ -157,7 +157,7 @@ export default function FoodifyAuth() {
 
   const handleLogout = async () => {
     await logout();
-    setUser(null);
+    setUser("");
   };
 
   return (
