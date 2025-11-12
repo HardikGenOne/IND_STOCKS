@@ -16,7 +16,7 @@ app.use(cookieParser());
 app.use(
   cors({
     //  origin: ["http://localhost:5174", process.env.FRONTEND_URL], 
-     origin: ["https://ind-stocks-six.vercel.app", process.env.FRONTEND_URL], 
+     origin: ["https://ind-stocks-six.vercel.app", "http://localhost:5174",process.env.FRONTEND_URL], 
     //  origin: ["*"], 
 
 
