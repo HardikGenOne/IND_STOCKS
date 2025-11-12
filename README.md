@@ -1,11 +1,11 @@
-# 🚀 Algorithmic Trading Backtesting Platform (India Focused)
+# Algorithmic Trading Backtesting Platform (India Focused)
 
 A no-code algorithmic trading platform built for Indian markets (NSE/BSE, F&O).  
 It lets traders and quants **design, backtest, optimize, and simulate** trading strategies — all without coding.
 
 ---
 
-## 🧩 Overview
+## Overview
 
 Most retail traders in India either rely on guesswork or complex Python scripts to test trading ideas.  
 This project aims to **make serious backtesting and optimization accessible to everyone** — through an intuitive, visual-first web app.
@@ -18,7 +18,7 @@ You can:
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 **Frontend**
 - Built with **React.js (SPA)**
@@ -48,16 +48,16 @@ You can:
 
 ## ⚙️ Main Features
 
-### 🔐 Authentication
+### Authentication
 - Secure signup & login using JWT tokens  
 - Passwords hashed with bcrypt  
 
-### 🧠 Strategy Builder
+### Strategy Builder
 - No-code drag-and-drop interface  
 - Use popular indicators (RSI, MA, MACD, Bollinger Bands, etc.)  
 - Save and manage multiple strategy configurations  
 
-### 📈 Backtesting Engine
+### Backtesting Engine
 - Runs async on historical OHLCV data  
 - Uses `technicalindicators` and `danfo.js` for analytics  
 - Computes metrics like:
@@ -66,30 +66,30 @@ You can:
   - Win Rate  
   - Profit Factor  
 
-### ⚡ Optimization
+### Optimization
 - Grid Search and Genetic Algorithm support to tune parameters  
 - Run multiple variations of a strategy and compare results  
 
-### 💹 Paper Trading
+### Paper Trading
 - Connect to live data feeds (via WebSockets)  
 - Simulate trades in real time — without risking money  
 
-### 🧾 Results & Journal Hub
+### Results & Journal Hub
 - Search, sort, and filter all backtest results  
 - Paginated results view  
 - Trade visualization on candlestick charts  
 
-### 📊 Portfolio & Risk Tools
+### Portfolio & Risk Tools
 - Compare multiple strategies side by side  
 - Built-in position sizing and stop-loss calculator  
 
-### 🌍 Community & Marketplace
+### Community & Marketplace
 - Share your own strategies  
 - Discover and clone pre-built templates  
 
 ---
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 | Layer | Tools |
 |-------|--------|
@@ -103,7 +103,7 @@ You can:
 
 ---
 
-## 🔌 API Routes (Summary)
+## API Routes (Summary)
 
 | Endpoint | Method | Description |
 |-----------|---------|-------------|
@@ -121,7 +121,7 @@ You can:
 
 ---
 
-## 🧠 Setup Guide
+## Setup Guide
 
 ### Prerequisites
 - Node.js 18+
@@ -131,7 +131,6 @@ You can:
 
 ### Steps
 
-**1️⃣ Clone the repo**
+**1 Clone the repo**
 ```bash
-git clone https://github.com/yourusername/trading-platform.git
-cd trading-platform
+git clone https://github.com/HardikGenOne/IND_STOCKS
