@@ -113,52 +113,62 @@ export default function FoodifyAuth() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
 
+  // Check if user is already logged in on page load
   useEffect(() => {
-    getUser().then((res) => setUser(res.data.user)).catch(() => {});
+    async function fetchUser() {
+      try {
+        const res = await getUser();
+        setUser(res.data.user);
+      } catch {
+        setUser(null);
+      }
+    }
+    fetchUser();
   }, []);
 
   const handleSignup = async (data) => {
     try {
       setError("");
-      await signup(data);
-      const res = await getUser();
+      const res = await signup(data); // Try signing up
       setUser(res.data.user);
+      alert(`Logged in as ${res.data.user.username}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Signup failed. Try again.");
+      if (err.response?.status === 409) {
+        // User already exists → try login
+        try {
+          const loginRes = await login({ identifier: data.email, password: data.password });
+          setUser(loginRes.data.user);
+          alert(`Logged in as ${loginRes.data.user.username}`);
+        } catch {
+          setError("User already exists but login failed.");
+        }
+      } else {
+        setError(err.response?.data?.message || "Signup failed. Try again.");
+      }
     }
   };
 
-  // const handleLogin = async (data) => {
-  //   try {
-  //     setError("");
-  //     await login(data);
-  //     const res = await getUser();
-  //     setUser(res.data.user);
-  //   } catch (err) {
-  //     setError(err.response?.data?.message || "Invalid credentials.");
-  //   }
-  // };
   const handleLogin = async (data) => {
     try {
       setError("");
-      const res = await login(data);              // if server returns user
-      if (res.data?.user) {
-        setUser(res.data.user);
-        return;
-      }
-      // otherwise fallback
-      const me = await getUser();
-      setUser(me.data.user);
+      const res = await login(data);
+      setUser(res.data.user);
+      alert(`Logged in as ${res.data.user.username}`);
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials.");
     }
   };
-  
 
   const handleLogout = async () => {
-    await logout();
-    setUser("");
+    try {
+      await logout();
+      setUser(null);
+      alert("Logged out");
+    } catch {
+      setError("Logout failed. Try again.");
+    }
   };
+
 
   return (
     <Container>
