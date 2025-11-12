@@ -128,16 +128,32 @@ export default function FoodifyAuth() {
     }
   };
 
+  // const handleLogin = async (data) => {
+  //   try {
+  //     setError("");
+  //     await login(data);
+  //     const res = await getUser();
+  //     setUser(res.data.user);
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || "Invalid credentials.");
+  //   }
+  // };
   const handleLogin = async (data) => {
     try {
       setError("");
-      await login(data);
-      const res = await getUser();
-      setUser(res.data.user);
+      const res = await login(data);              // if server returns user
+      if (res.data?.user) {
+        setUser(res.data.user);
+        return;
+      }
+      // otherwise fallback
+      const me = await getUser();
+      setUser(me.data.user);
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials.");
     }
   };
+  
 
   const handleLogout = async () => {
     await logout();

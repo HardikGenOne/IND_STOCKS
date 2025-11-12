@@ -20,6 +20,8 @@
 // export const logout = () => API.post("/auth/logout");
 
 
+// -----------------------------
+
 import axios from "axios";
 
 const BASE_URL =
@@ -37,4 +39,8 @@ export const login = (data) => API.post("/auth/login", data);
 export const getUser = () => API.get("/auth/me");
 export const logout = () => API.post("/auth/logout");
  
+export default API;
+// ---------------------------------
+
+
 
