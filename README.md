@@ -134,3 +134,14 @@ You can:
 **1 Clone the repo**
 ```bash
 git clone https://github.com/HardikGenOne/IND_STOCKS
+
+
+**2 Frontend URL**
+```bash
+git clone ind-stocks-six.vercel.app
+
+
+
+**3 Backend URL**
+```bash
+git clone https://ind-stocks-1.onrender.com/api
