@@ -129,16 +129,16 @@ export default function FoodifyAuth() {
   const handleSignup = async (data) => {
     try {
       setError("");
-      const res = await signup(data); // Try signing up
+      const res = await signup(data); 
       setUser(res.data.user);
-      alert(`Logged in as ${res.data.user.username}`);
+      alert(`Authenticated.. Username as ${res.data.user.username}`);
     } catch (err) {
       if (err.response?.status === 409) {
-        // User already exists → try login
+      
         try {
           const loginRes = await login({ identifier: data.email, password: data.password });
           setUser(loginRes.data.user);
-          alert(`Logged in as ${loginRes.data.user.username}`);
+          alert(`Authenticated.. Username as ${loginRes.data.user.username}`);
         } catch {
           setError("User already exists but login failed.");
         }
@@ -153,7 +153,7 @@ export default function FoodifyAuth() {
       setError("");
       const res = await login(data);
       setUser(res.data.user);
-      alert(`Logged in as ${res.data.user.username}`);
+      alert(`Authenticated.. Username as ${res.data.user.username}`);
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials.");
     }
@@ -163,7 +163,7 @@ export default function FoodifyAuth() {
     try {
       await logout();
       setUser(null);
-      alert("Logged out");
+      alert("Signing Off .. You are now Leaving");
     } catch {
       setError("Logout failed. Try again.");
     }
