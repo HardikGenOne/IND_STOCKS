@@ -63,10 +63,16 @@ router.post("/login", async (req, res) => {
 
     const token = signToken({ id: user.id, username: user.username });
 
+    // res.cookie("access_token", token, {
+    //   httpOnly: true,
+    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    //   secure: process.env.NODE_ENV === "production",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
     res.cookie("access_token", token, {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     
