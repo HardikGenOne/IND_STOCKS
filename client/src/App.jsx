@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import AuthForm from "./components/AuthForm";
+import Dashboard from "./pages/Dashboard"; // Import the new Dashboard
 import { signup, login, getUser, logout } from "./api";
 
-const Container = styled.div`
+// --- STYLES FOR LOGIN PAGE ONLY ---
+const LoginContainer = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
@@ -24,14 +26,8 @@ const Card = styled.div`
   animation: slideUp 0.5s ease-out;
 
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 `;
 
@@ -56,60 +52,7 @@ const Subtitle = styled.p`
   font-weight: 500;
 `;
 
-const UserSection = styled.div`
-  text-align: center;
-`;
-
-const WelcomeText = styled.p`
-  font-size: 18px;
-  color: #374151;
-  margin-bottom: 24px;
-  
-  strong {
-    color: #667eea;
-    font-weight: 700;
-  }
-`;
-
-const LogoutButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const UserIcon = styled.div`
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  margin: 0 auto 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  color: white;
-  font-weight: 700;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-`;
-
-export default function FoodifyAuth() {
+export default function App() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
 
@@ -131,14 +74,12 @@ export default function FoodifyAuth() {
       setError("");
       const res = await signup(data); 
       setUser(res.data.user);
-      alert(`Authenticated.. Username as ${res.data.user.username}`);
+      // Removed alert, direct transition to dashboard
     } catch (err) {
       if (err.response?.status === 409) {
-      
         try {
           const loginRes = await login({ identifier: data.email, password: data.password });
           setUser(loginRes.data.user);
-          alert(`Authenticated.. Username as ${loginRes.data.user.username}`);
         } catch {
           setError("User already exists but login failed.");
         }
@@ -153,7 +94,6 @@ export default function FoodifyAuth() {
       setError("");
       const res = await login(data);
       setUser(res.data.user);
-      alert(`Authenticated.. Username as ${res.data.user.username}`);
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials.");
     }
@@ -163,39 +103,33 @@ export default function FoodifyAuth() {
     try {
       await logout();
       setUser(null);
-      alert("Signing Off .. You are now Leaving");
     } catch {
       setError("Logout failed. Try again.");
     }
   };
 
+  // --- THE MAIN RENDER LOGIC ---
+  
+  // 1. If User is Logged In -> Show Dashboard (Full Screen)
+  if (user) {
+    return <Dashboard user={user} onLogout={handleLogout} />;
+  }
 
+  // 2. If No User -> Show Login Card
   return (
-    <Container>
+    <LoginContainer>
       <Card>
         <Logo>
           <Title>Smart Strategy Backtester</Title>
           <Subtitle>Analyze Charts, See Strategy Matrix</Subtitle>
         </Logo>
 
-        {!user ? (
-          <AuthForm
-            onSignup={handleSignup}
-            onLogin={handleLogin}
-            error={error}
-          />
-        ) : (
-          <UserSection>
-            <UserIcon>{user.username.charAt(0).toUpperCase()}</UserIcon>
-            <WelcomeText>
-              Welcome back, <strong>{user.username}</strong>!
-            </WelcomeText>
-            <LogoutButton onClick={handleLogout}>
-              Logout
-            </LogoutButton>
-          </UserSection>
-        )}
+        <AuthForm
+          onSignup={handleSignup}
+          onLogin={handleLogin}
+          error={error}
+        />
       </Card>
-    </Container>
+    </LoginContainer>
   );
 }
