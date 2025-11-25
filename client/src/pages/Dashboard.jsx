@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TradingChart from '../components/TradingChart';
-import { getPortfolio } from '../api'; // Import the new API function
+import { getPortfolio, sellStock } from '../api'; 
 
 const DashboardContainer = styled.div`
   min-height: 100vh;
@@ -51,11 +51,54 @@ const LogoutBtn = styled.button`
   }
 `;
 
+// New Styles for the Portfolio Grid
+const PortfolioGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const PortfolioCard = styled.div`
+  background: #1E222D;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #2B2B43;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #434651;
+  }
+`;
+
+const ExitButton = styled.button`
+  width: 100%;
+  padding: 10px;
+  background: ${props => props.disabled ? '#444' : 'rgba(239, 83, 80, 0.1)'};
+  color: ${props => props.disabled ? '#888' : '#ef5350'};
+  border: 1px solid ${props => props.disabled ? '#444' : '#ef5350'};
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  margin-top: 10px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.disabled ? '#444' : '#ef5350'};
+    color: ${props => props.disabled ? '#888' : 'white'};
+  }
+`;
+
 const Dashboard = ({ user, onLogout }) => {
   const [portfolio, setPortfolio] = useState(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // Helper to refresh data after trade
+  const [refreshTrigger, setRefreshTrigger] = useState(0); 
+  const [exitingSymbol, setExitingSymbol] = useState(null); // Track which coin is being sold
 
-  // Fetch Portfolio on Mount OR when a trade happens
+  // Fetch Portfolio
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -66,14 +109,37 @@ const Dashboard = ({ user, onLogout }) => {
       }
     };
     fetchData();
-  }, [refreshTrigger]); // Re-run when this changes
+  }, [refreshTrigger]); 
 
-  // Function to force refresh (pass this to the Chart)
   const refreshData = () => setRefreshTrigger(prev => prev + 1);
 
-  // Use the fetched balance OR the initial user balance
-  // If portfolio is missing AND user.balance is missing, default to 0
-    const currentBalance = portfolio?.balance ?? user.balance ?? 0;
+  // ✅ LOGIC: FULL EXIT
+  const handleFullExit = async (symbol, qty) => {
+    if(!window.confirm(`Are you sure you want to sell ALL ${qty} ${symbol}?`)) return;
+
+    setExitingSymbol(symbol); // Show loading state on button
+
+    try {
+      // 1. We need the CURRENT price to execute a market sell
+      // We fetch it directly from Binance API for accuracy
+      const priceRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+      const priceData = await priceRes.json();
+      const currentPrice = parseFloat(priceData.price);
+
+      // 2. Call Backend to Sell Everything
+      await sellStock(symbol, currentPrice, qty);
+
+      // 3. Refresh Dashboard
+      refreshData();
+      
+    } catch (err) {
+      alert("Failed to close position: " + (err.response?.data?.message || err.message));
+    } finally {
+      setExitingSymbol(null);
+    }
+  };
+
+  const currentBalance = portfolio?.balance ?? user.balance ?? 0;
 
   return (
     <DashboardContainer>
@@ -90,25 +156,46 @@ const Dashboard = ({ user, onLogout }) => {
         </Header>
         
         <main>
-          {/* Pass the refresh function so the Chart can tell Dashboard to update balance */}
+          {/* Chart Section */}
           <TradingChart onTradeSuccess={refreshData} />
           
-          {/* OPTIONAL: Show Holdings List Below Chart */}
-          <div style={{ marginTop: '30px', color: 'white' }}>
-            <h3 style={{ borderBottom: '1px solid #2B2B43', paddingBottom: '10px' }}>Your Portfolio</h3>
+          {/* Portfolio Section */}
+          <div style={{ marginTop: '40px', color: 'white' }}>
+            <h3 style={{ borderBottom: '1px solid #2B2B43', paddingBottom: '15px', fontSize: '20px' }}>Your Portfolio</h3>
+            
             {portfolio?.holdings?.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px', marginTop: '20px' }}>
+              <PortfolioGrid>
                  {portfolio.holdings.map(h => (
-                   <div key={h.symbol} style={{ background: '#1E222D', padding: '15px', borderRadius: '8px' }}>
-                     <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{h.symbol}</div>
-                     <div style={{ color: '#aaa', fontSize: '14px' }}>Qty: {h.quantity}</div>
-                     {/* Calculate Value roughly using avgPrice for now */}
-                     <div style={{ color: '#26a69a' }}>Entry: ${h.avgPrice.toFixed(2)}</div>
-                   </div>
+                   <PortfolioCard key={h.symbol}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{h.symbol}</span>
+                        <span style={{ background: '#2B2B43', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#aaa' }}>LONG</span>
+                     </div>
+                     
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#ccc' }}>
+                        <span>Quantity:</span>
+                        <span style={{ color: 'white' }}>{h.quantity}</span>
+                     </div>
+                     
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#ccc' }}>
+                        <span>Avg Entry:</span>
+                        <span style={{ color: '#26a69a' }}>${h.avgPrice.toFixed(2)}</span>
+                     </div>
+
+                     {/* THE EXIT BUTTON */}
+                     <ExitButton 
+                        onClick={() => handleFullExit(h.symbol, h.quantity)}
+                        disabled={exitingSymbol === h.symbol}
+                     >
+                        {exitingSymbol === h.symbol ? 'SELLING...' : 'CLOSE POSITION'}
+                     </ExitButton>
+                   </PortfolioCard>
                  ))}
-              </div>
+              </PortfolioGrid>
             ) : (
-              <p style={{ color: 'gray', marginTop: '10px' }}>No trades yet.</p>
+              <div style={{ padding: '40px', textAlign: 'center', color: 'gray', background: '#1E222D', borderRadius: '12px', marginTop: '20px' }}>
+                <p>No open positions. Start trading above!</p>
+              </div>
             )}
           </div>
 
