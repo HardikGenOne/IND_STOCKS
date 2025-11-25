@@ -77,7 +77,15 @@ router.post("/login", async (req, res) => {
     });
     
 
-    res.json({ user: { id: user.id, username: user.username, email: user.email } });
+    // Example inside /login
+    res.json({ 
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email,
+        balance: user.balance // <--- Add this
+      } 
+    });
   } catch {
     res.status(500).json({ message: "Login failed" });
   }

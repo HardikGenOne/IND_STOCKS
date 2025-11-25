@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import 'dotenv/config';
 import helmet from "helmet";
 import authRoutes from "./routes/auth.js";
+import tradeRoutes from "./routes/tradeRoutes.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
+app.use("/api/trade", tradeRoutes); 
 
 app.get("/", (req, res) => {
   res.send("Backend running ✅");
