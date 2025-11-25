@@ -145,7 +145,7 @@ const TradingChart = ({ onTradeSuccess }) => {
     });
 
     // Fetch History
-    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1m&limit=1000`)
+    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1m&limit=10000`)
       .then((res) => res.json())
       .then((data) => {
         const cdata = data.map((d) => ({
