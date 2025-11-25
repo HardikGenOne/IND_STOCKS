@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TradingChart from '../components/TradingChart';
-import { getPortfolio } from '../services/api'; // Import the new API function
+import { getPortfolio } from '../api'; // Import the new API function
 
 const DashboardContainer = styled.div`
   min-height: 100vh;
