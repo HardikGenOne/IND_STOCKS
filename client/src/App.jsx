@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 // Pages & Components
 import Home from "./pages/Home";
+import History from "./pages/History";
 import Dashboard from "./pages/Dashboard";
 import AuthForm from "./components/AuthForm";
 import { signup, login, getUser, logout } from "./api";
@@ -115,7 +116,13 @@ export default function App() {
           element={
             user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } 
+          
         />
+        {/* Inside Routes */}
+      <Route 
+        path="/history" 
+        element={user ? <History /> : <Navigate to="/login" />} 
+      />
       </Routes>
     </BrowserRouter>
   );

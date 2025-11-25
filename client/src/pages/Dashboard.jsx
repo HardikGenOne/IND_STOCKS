@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TradingChart from '../components/TradingChart';
 import { getPortfolio, sellStock } from '../api'; 
+import { Link } from 'react-router-dom';
 
 const DashboardContainer = styled.div`
   min-height: 100vh;
@@ -147,6 +148,13 @@ const Dashboard = ({ user, onLogout }) => {
         <Header>
           <Title>Smart Strategy Backtester</Title>
           <UserInfo>
+          <Link 
+                to="/history" 
+                style={{ color: '#8892b0', textDecoration: 'none', marginRight: '15px', fontWeight: 'bold' }}
+            >
+                📊 Journal
+            </Link>
+            
             <span>Welcome, <strong>{user.username}</strong></span>
             <span style={{ color: '#26a69a', fontSize: '18px', fontWeight: 'bold' }}>
               ${currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
