@@ -6,7 +6,7 @@ import styled from "styled-components";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import AuthForm from "./components/AuthForm";
-import { signup, login, getUser, logout } from "./services/api";
+import { signup, login, getUser, logout } from "./api";
 
 // --- STYLED COMPONENTS FOR AUTH PAGE ---
 const LoginContainer = styled.div`
