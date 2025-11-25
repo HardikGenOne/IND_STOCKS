@@ -159,11 +159,14 @@ export const sellStock = async (req, res) => {
       }
   
       // --- CALCULATE PROFIT/LOSS ---
+
+      
       // (Sell Price - Avg Buy Price) * Quantity
       const profitOrLoss = (parseFloat(price) - holding.avgPrice) * parseFloat(quantity);
   
       // 2. EXECUTE TRANSACTION
       const result = await prisma.$transaction(async (tx) => {
+
         // A. Add Money
         const updatedUser = await tx.user.update({
           where: { id: userId },
