@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createChart, ColorType, CandlestickSeries, LineSeries, CrosshairMode } from 'lightweight-charts';
-import { buyStock, sellStock, getPortfolio } from '../services/api'; 
+import { buyStock, sellStock, getPortfolio } from '../api'; 
 
 const POPULAR_PAIRS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'DOGEUSDT'];
 
