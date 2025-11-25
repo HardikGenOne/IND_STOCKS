@@ -72,7 +72,8 @@ const Dashboard = ({ user, onLogout }) => {
   const refreshData = () => setRefreshTrigger(prev => prev + 1);
 
   // Use the fetched balance OR the initial user balance
-  const currentBalance = portfolio?.balance ?? user.balance;
+  // If portfolio is missing AND user.balance is missing, default to 0
+    const currentBalance = portfolio?.balance ?? user.balance ?? 0;
 
   return (
     <DashboardContainer>

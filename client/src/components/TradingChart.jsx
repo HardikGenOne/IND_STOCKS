@@ -142,7 +142,7 @@ const TradingChart = ({ onTradeSuccess }) => {
            </button>
            <button onClick={() => {trendlines.forEach(l => chartRef.current.removeSeries(l)); setTrendlines([]);}} style={{ padding: '8px 16px', background: '#2B2B43', color: 'white', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>🗑 Clear</button>
         </div>
-        <h2 style={{ margin: 0, color: currentPrice >= 0 ? '#26a69a' : '#ef5350', fontSize: '24px' }}>${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
+        <h2 style={{ margin: 0, color: currentPrice >= 0 ? '#26a69a' : '#ef5350', fontSize: '24px' }}>${(currentPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
       </div>
 
       <div ref={chartContainerRef} style={{ width: '100%', height: '500px', border: '1px solid #2B2B43', borderRadius: '4px', cursor: isDrawMode ? 'crosshair' : 'default' }} />
