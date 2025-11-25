@@ -25,18 +25,17 @@ model User {
 
 model Trade {
   id        String   @id @default(uuid())
-  
-  // Foreign Key to User
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  
-  symbol    String   // e.g. "BTCUSDT"
+  symbol    String   
   type      String   // "BUY" or "SELL"
   quantity  Float
-  price     Float    // Price at executed trade
-  totalCost Float    // quantity * price
+  price     Float    
+  totalCost Float    
+  realizedPnl Float? // <--- ADD THIS (Nullable, because BUYs don't have PnL)
   createdAt DateTime @default(now())
 }
+
 
 model Holding {
   id        String   @id @default(uuid())
