@@ -114,7 +114,7 @@ const Home = ({ user }) => {
     <Container>
       {/* NAVBAR */}
       <Navbar>
-        <Logo>Signalist Pro</Logo>
+        <Logo>IND STOCKS</Logo>
         <NavLinks>
           {user ? (
             <Button to="/dashboard" className="primary">Go to Dashboard</Button>
@@ -134,7 +134,7 @@ const Home = ({ user }) => {
           <span>Without The Risk.</span>
         </Headline>
         <Subheadline>
-          Practice trading BTC, ETH, and SOL with live market data and $10,000 in virtual capital. 
+          Practice trading BTC, ETH, and SOL with live market data and $10,000 in virtual capital.
           Draw trendlines, analyze charts, and track your PnL in real-time.
         </Subheadline>
         <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>

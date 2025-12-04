@@ -21,18 +21,19 @@ const LoginContainer = styled.div`
 `;
 
 const Card = styled.div`
-  background: rgba(255, 255, 255, 0.95);
+  background: #1E222D;
   backdrop-filter: blur(10px);
   border-radius: 24px;
   padding: 48px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   max-width: 440px;
   width: 100%;
+  border: 1px solid #2B2B43;
 `;
 
 const Logo = styled.div` text-align: center; margin-bottom: 32px; `;
-const Title = styled.h1` font-size: 32px; font-weight: 800; color: #333; margin: 0 0 8px 0; `;
-const Subtitle = styled.p` color: #6b7280; font-size: 15px; margin: 0; font-weight: 500; `;
+const Title = styled.h1` font-size: 32px; font-weight: 800; color: white; margin: 0 0 8px 0; `;
+const Subtitle = styled.p` color: #8892b0; font-size: 15px; margin: 0; font-weight: 500; `;
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -44,7 +45,7 @@ export default function App() {
     async function fetchUser() {
       try {
         const res = await getUser();
-        if(res.data.user) setUser(res.data.user);
+        if (res.data.user) setUser(res.data.user);
       } catch {
         setUser(null);
       } finally {
@@ -58,7 +59,7 @@ export default function App() {
   const handleSignup = async (data) => {
     try {
       setError("");
-      const res = await signup(data); 
+      const res = await signup(data);
       setUser(res.data.user);
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed.");
@@ -84,7 +85,7 @@ export default function App() {
     }
   };
 
-  if (loading) return <div style={{background:'#0e1016', height:'100vh'}}></div>; // Black screen while checking auth
+  if (loading) return <div style={{ background: '#0e1016', height: '100vh' }}></div>; // Black screen while checking auth
 
   return (
     <BrowserRouter>
@@ -93,36 +94,55 @@ export default function App() {
         <Route path="/" element={<Home user={user} />} />
 
         {/* 2. LOGIN / SIGNUP PAGE */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             user ? <Navigate to="/dashboard" /> : (
-              <LoginContainer>
-                <Card>
-                  <Logo>
-                    <Title>Welcome Back</Title>
-                    <Subtitle>Login to access your terminal</Subtitle>
-                  </Logo>
-                  <AuthForm onSignup={handleSignup} onLogin={handleLogin} error={error} />
-                </Card>
-              </LoginContainer>
+              <>
+                {/* Show Home page in background */}
+                <Home user={null} />
+
+                {/* Modal Overlay */}
+                <div style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  backdropFilter: 'blur(8px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '20px',
+                  zIndex: 1000
+                }}>
+                  <Card>
+                    <Logo>
+                      <Title>Welcome Back</Title>
+                      <Subtitle>Login to access your terminal</Subtitle>
+                    </Logo>
+                    <AuthForm onSignup={handleSignup} onLogin={handleLogin} error={error} />
+                  </Card>
+                </div>
+              </>
             )
-          } 
+          }
         />
 
         {/* 3. DASHBOARD (Protected) */}
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
-          } 
-          
+          }
+
         />
         {/* Inside Routes */}
-      <Route 
-        path="/history" 
-        element={user ? <History /> : <Navigate to="/login" />} 
-      />
+        <Route
+          path="/history"
+          element={user ? <History /> : <Navigate to="/login" />}
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -1,9 +1,9 @@
 import axios from "axios";
 
 export const API = axios.create({
-  // baseURL: "http://localhost:8080/api",
+  baseURL: "http://localhost:8080/api",
 
-  baseURL: "https://ind-stocks-1.onrender.com/api",
+  // baseURL: "https://ind-stocks-1.onrender.com/api",
   withCredentials: true, // send cookies
 });
 
@@ -36,27 +36,24 @@ export const getTradeHistory = async (params) => {
   return await API.get("/trade/history", { params });
 };
 
-// -----------------------------
+// ========================================
+// NEW CRUD OPERATIONS FOR COLLEGE SUBMISSION
+// ========================================
 
-// import axios from "axios";
+// UPDATE Operations
+export const updateTradeNote = async (tradeId, note) => {
+  return await API.put(`/trade/trade/${tradeId}/note`, { note });
+};
 
-// const BASE_URL =
-//   window.location.hostname === "localhost"
-//     ? "http://localhost:8080/api"
-//     : "https://ind-stocks-1.onrender.com/api";
+export const updateUserProfile = async (username, email) => {
+  return await API.put(`/trade/user/profile`, { username, email });
+};
 
-// export const API = axios.create({
-//   baseURL: BASE_URL,
-//   withCredentials: true,
-// });
+// DELETE Operations
+export const deleteTrade = async (tradeId) => {
+  return await API.delete(`/trade/trade/${tradeId}`);
+};
 
-// export const signup = (data) => API.post("/auth/signup", data);
-// export const login = (data) => API.post("/auth/login", data);
-// export const getUser = () => API.get("/auth/me");
-// export const logout = () => API.post("/auth/logout");
- 
-// export default API;
-// ---------------------------------
-
-
-
+export const resetTradeHistory = async () => {
+  return await API.delete(`/trade/history/reset`);
+};

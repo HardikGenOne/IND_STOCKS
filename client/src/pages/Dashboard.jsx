@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TradingChart from '../components/TradingChart';
-import { getPortfolio, sellStock } from '../api'; 
+import { getPortfolio, sellStock } from '../api';
 import { Link } from 'react-router-dom';
 
 const DashboardContainer = styled.div`
@@ -96,7 +96,7 @@ const ExitButton = styled.button`
 
 const Dashboard = ({ user, onLogout }) => {
   const [portfolio, setPortfolio] = useState(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); 
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [exitingSymbol, setExitingSymbol] = useState(null); // Track which coin is being sold
 
   // Fetch Portfolio
@@ -110,13 +110,13 @@ const Dashboard = ({ user, onLogout }) => {
       }
     };
     fetchData();
-  }, [refreshTrigger]); 
+  }, [refreshTrigger]);
 
   const refreshData = () => setRefreshTrigger(prev => prev + 1);
 
   // ✅ LOGIC: FULL EXIT
   const handleFullExit = async (symbol, qty) => {
-    if(!window.confirm(`Are you sure you want to sell ALL ${qty} ${symbol}?`)) return;
+    if (!window.confirm(`Are you sure you want to sell ALL ${qty} ${symbol}?`)) return;
 
     setExitingSymbol(symbol); // Show loading state on button
 
@@ -132,7 +132,7 @@ const Dashboard = ({ user, onLogout }) => {
 
       // 3. Refresh Dashboard
       refreshData();
-      
+
     } catch (err) {
       alert("Failed to close position: " + (err.response?.data?.message || err.message));
     } finally {
@@ -146,15 +146,15 @@ const Dashboard = ({ user, onLogout }) => {
     <DashboardContainer>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <Header>
-          <Title>Smart Strategy Backtester</Title>
+          <Title>IND STOCKS</Title>
           <UserInfo>
-          <Link 
-                to="/history" 
-                style={{ color: '#8892b0', textDecoration: 'none', marginRight: '15px', fontWeight: 'bold' }}
+            <Link
+              to="/history"
+              style={{ color: '#8892b0', textDecoration: 'none', marginRight: '15px', fontWeight: 'bold' }}
             >
-                📊 Journal
+              📊 Journal
             </Link>
-            
+
             <span>Welcome, <strong>{user.username}</strong></span>
             <span style={{ color: '#26a69a', fontSize: '18px', fontWeight: 'bold' }}>
               ${currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -162,43 +162,43 @@ const Dashboard = ({ user, onLogout }) => {
             <LogoutBtn onClick={onLogout}>Logout</LogoutBtn>
           </UserInfo>
         </Header>
-        
+
         <main>
           {/* Chart Section */}
           <TradingChart onTradeSuccess={refreshData} />
-          
+
           {/* Portfolio Section */}
           <div style={{ marginTop: '40px', color: 'white' }}>
             <h3 style={{ borderBottom: '1px solid #2B2B43', paddingBottom: '15px', fontSize: '20px' }}>Your Portfolio</h3>
-            
+
             {portfolio?.holdings?.length > 0 ? (
               <PortfolioGrid>
-                 {portfolio.holdings.map(h => (
-                   <PortfolioCard key={h.symbol}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{h.symbol}</span>
-                        <span style={{ background: '#2B2B43', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#aaa' }}>LONG</span>
-                     </div>
-                     
-                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#ccc' }}>
-                        <span>Quantity:</span>
-                        <span style={{ color: 'white' }}>{h.quantity}</span>
-                     </div>
-                     
-                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#ccc' }}>
-                        <span>Avg Entry:</span>
-                        <span style={{ color: '#26a69a' }}>${h.avgPrice.toFixed(2)}</span>
-                     </div>
+                {portfolio.holdings.map(h => (
+                  <PortfolioCard key={h.symbol}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{h.symbol}</span>
+                      <span style={{ background: '#2B2B43', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: '#aaa' }}>LONG</span>
+                    </div>
 
-                     {/* THE EXIT BUTTON */}
-                     <ExitButton 
-                        onClick={() => handleFullExit(h.symbol, h.quantity)}
-                        disabled={exitingSymbol === h.symbol}
-                     >
-                        {exitingSymbol === h.symbol ? 'SELLING...' : 'CLOSE POSITION'}
-                     </ExitButton>
-                   </PortfolioCard>
-                 ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#ccc' }}>
+                      <span>Quantity:</span>
+                      <span style={{ color: 'white' }}>{h.quantity}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#ccc' }}>
+                      <span>Avg Entry:</span>
+                      <span style={{ color: '#26a69a' }}>${h.avgPrice.toFixed(2)}</span>
+                    </div>
+
+                    {/* THE EXIT BUTTON */}
+                    <ExitButton
+                      onClick={() => handleFullExit(h.symbol, h.quantity)}
+                      disabled={exitingSymbol === h.symbol}
+                    >
+                      {exitingSymbol === h.symbol ? 'SELLING...' : 'CLOSE POSITION'}
+                    </ExitButton>
+                  </PortfolioCard>
+                ))}
               </PortfolioGrid>
             ) : (
               <div style={{ padding: '40px', textAlign: 'center', color: 'gray', background: '#1E222D', borderRadius: '12px', marginTop: '20px' }}>

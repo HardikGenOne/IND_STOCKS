@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { getPortfolio, getTradeHistory } from '../api'; // Ensure getTradeHistory is added to api.js
+import { getPortfolio, getTradeHistory, updateTradeNote, deleteTrade, resetTradeHistory } from '../api';
 import { Link } from 'react-router-dom';
 
 // --- STYLES ---
@@ -139,6 +139,50 @@ const Pagination = styled.div`
   }
 `;
 
+// NEW: Action Buttons
+const ActionButton = styled.button`
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  
+  &.note {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    &:hover { background: #667eea; color: white; }
+  }
+  
+  &.delete {
+    background: rgba(239, 83, 80, 0.2);
+    color: #ef5350;
+    &:hover { background: #ef5350; color: white; }
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const ResetButton = styled.button`
+  padding: 10px 20px;
+  background: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+  border: 1px solid #ef5350;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: #ef5350;
+    color: white;
+  }
+`;
+
 const History = () => {
   // Data State
   const [trades, setTrades] = useState([]);
@@ -151,13 +195,18 @@ const History = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // NEW: CRUD Operation State
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [noteText, setNoteText] = useState("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   // 1. Fetch Global Stats (Uses Portfolio API)
   useEffect(() => {
     getPortfolio().then(res => {
       // Calculate Stats based on ALL trades (not just current page)
       const allTrades = res.data.trades || [];
       const sellTrades = allTrades.filter(t => t.type === 'SELL');
-      
+
       const totalPnl = sellTrades.reduce((acc, t) => acc + (t.realizedPnl || 0), 0);
       const wins = sellTrades.filter(t => (t.realizedPnl || 0) > 0).length;
       const winRate = sellTrades.length > 0 ? (wins / sellTrades.length) * 100 : 0;
@@ -173,13 +222,13 @@ const History = () => {
       setLoading(true);
       try {
         // Calls: /api/trade/history?page=1&limit=10&search=BTC&type=SELL
-        const res = await getTradeHistory({ 
-          page, 
-          limit: 10, 
-          search, 
-          type: filterType 
+        const res = await getTradeHistory({
+          page,
+          limit: 10,
+          search,
+          type: filterType
         });
-        
+
         setTrades(res.data.data);
         setTotalPages(res.data.pagination.pages);
       } catch (err) {
@@ -195,7 +244,40 @@ const History = () => {
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [page, search, filterType]); 
+  }, [page, search, filterType, refreshTrigger]);
+
+  // NEW: Handler Functions for CRUD Operations
+  const handleAddNote = async (tradeId) => {
+    if (!noteText.trim()) return;
+    try {
+      await updateTradeNote(tradeId, noteText);
+      setEditingNoteId(null);
+      setNoteText("");
+      setRefreshTrigger(prev => prev + 1); // Refresh data
+    } catch (err) {
+      alert("Failed to add note: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDeleteTrade = async (tradeId) => {
+    if (!window.confirm("Are you sure you want to delete this trade?")) return;
+    try {
+      await deleteTrade(tradeId);
+      setRefreshTrigger(prev => prev + 1); // Refresh data
+    } catch (err) {
+      alert("Failed to delete trade: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleResetHistory = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL trades? This cannot be undone!")) return;
+    try {
+      await resetTradeHistory();
+      setRefreshTrigger(prev => prev + 1); // Refresh data
+    } catch (err) {
+      alert("Failed to reset history: " + (err.response?.data?.message || err.message));
+    }
+  };
 
   return (
     <Container>
@@ -230,19 +312,22 @@ const History = () => {
 
       {/* FILTERS & SEARCH */}
       <FilterBar>
-        <SearchInput 
-          placeholder="Search Symbol (e.g. BTC)..." 
+        <SearchInput
+          placeholder="Search Symbol (e.g. BTC)..."
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }} 
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         />
-        <Select 
-          value={filterType} 
+        <Select
+          value={filterType}
           onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
         >
           <option value="">All Types</option>
           <option value="BUY">Buys Only</option>
           <option value="SELL">Sells Only</option>
         </Select>
+        <ResetButton onClick={handleResetHistory}>
+          🗑 Reset History
+        </ResetButton>
       </FilterBar>
 
       {/* HISTORY TABLE */}
@@ -257,6 +342,8 @@ const History = () => {
               <th>Qty</th>
               <th>Total</th>
               <th>PnL</th>
+              <th>Note</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody style={{ opacity: loading ? 0.5 : 1 }}>
@@ -277,11 +364,51 @@ const History = () => {
                     <span style={{ color: '#444' }}>-</span>
                   )}
                 </td>
+                <td>
+                  {editingNoteId === t.id ? (
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                      <input
+                        type="text"
+                        value={noteText}
+                        onChange={(e) => setNoteText(e.target.value)}
+                        placeholder="Add note..."
+                        style={{
+                          padding: '4px 8px',
+                          background: '#2B2B43',
+                          border: '1px solid #434651',
+                          borderRadius: '4px',
+                          color: 'white',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <ActionButton className="note" onClick={() => handleAddNote(t.id)}>Save</ActionButton>
+                      <ActionButton className="delete" onClick={() => { setEditingNoteId(null); setNoteText(""); }}>Cancel</ActionButton>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ fontSize: '12px', color: '#8892b0' }}>{t.note || '-'}</span>
+                      <ActionButton
+                        className="note"
+                        onClick={() => {
+                          setEditingNoteId(t.id);
+                          setNoteText(t.note || '');
+                        }}
+                      >
+                        {t.note ? '✏️' : '+'}
+                      </ActionButton>
+                    </div>
+                  )}
+                </td>
+                <td>
+                  <ActionButton className="delete" onClick={() => handleDeleteTrade(t.id)}>
+                    🗑 Delete
+                  </ActionButton>
+                </td>
               </tr>
             ))}
             {!loading && trades.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: 'gray' }}>
+                <td colSpan="9" style={{ textAlign: 'center', padding: '30px', color: 'gray' }}>
                   No trades found matching your criteria.
                 </td>
               </tr>
