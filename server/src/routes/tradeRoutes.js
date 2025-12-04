@@ -1,5 +1,5 @@
 import express from "express";
-import { buyStock, sellStock, getDashboard } from "../controllers/tradeController.js";
+import { buyStock, sellStock, getDashboard, getHistory } from "../controllers/tradeController.js";
 import { requireAuth } from "../middleware/auth.js"; // This is your existing file
 
 const router = express.Router();
@@ -10,5 +10,6 @@ router.use(requireAuth);
 router.post("/buy", buyStock);
 router.post("/sell", sellStock);
 router.get("/portfolio", getDashboard);
+router.get("/history", getHistory);
 
 export default router;
