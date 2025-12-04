@@ -30,6 +30,12 @@ export const buyStock = async (symbol, price, quantity) => {
 export const sellStock = async (symbol, price, quantity) => {
   return await API.post("/trade/sell", { symbol, price, quantity });
 };
+
+export const getTradeHistory = async (params) => {
+  // Params looks like: { page: 1, limit: 10, search: 'BTC', type: 'BUY' }
+  return await API.get("/trade/history", { params });
+};
+
 // -----------------------------
 
 // import axios from "axios";
