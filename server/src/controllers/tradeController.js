@@ -74,6 +74,62 @@ export const buyStock = async (req, res) => {
   }
 };
 
+// ✅ GET TRADES with SEARCH, SORT, FILTER, PAGINATION
+export const getHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Extract Query Params
+    const { 
+      page = 1, 
+      limit = 10, 
+      search = "", 
+      type = "", // Filter: BUY or SELL
+      sortBy = "createdAt", 
+      order = "desc" 
+    } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Build Filters
+    const whereClause = {
+      userId,
+      // SEARCH: By Symbol (Case insensitive usually requires specific DB config, mostly exact match in basic Prisma)
+      symbol: { contains: search, mode: 'insensitive' }, 
+    };
+
+    // FILTER: By Type (if provided)
+    if (type) {
+      whereClause.type = type;
+    }
+
+    // Execute Query
+    const trades = await prisma.trade.findMany({
+      where: whereClause,
+      orderBy: {
+        [sortBy]: order, // SORTING
+      },
+      skip: parseInt(skip), // PAGINATION
+      take: parseInt(limit),
+    });
+
+    // Get Total Count for Pagination UI
+    const total = await prisma.trade.count({ where: whereClause });
+
+    res.json({
+      data: trades,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch history" });
+  }
+};
+
 // // ✅ SELL STOCK
 // export const sellStock = async (req, res) => {
 //   try {
