@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { getPortfolio } from '../api';
+import { getPortfolio, getTradeHistory } from '../api'; // Ensure getTradeHistory is added to api.js
 import { Link } from 'react-router-dom';
 
 // --- STYLES ---
@@ -43,6 +43,35 @@ const StatCard = styled.div`
   
   h3 { font-size: 14px; color: #8892b0; margin-bottom: 5px; }
   p { font-size: 24px; font-weight: 800; margin: 0; }
+`;
+
+// --- NEW FILTERS BAR ---
+const FilterBar = styled.div`
+  max-width: 1000px;
+  margin: 0 auto 20px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+`;
+
+const SearchInput = styled.input`
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #434651;
+  background: #2B2B43;
+  color: white;
+  flex: 1;
+  
+  &:focus { outline: 1px solid #667eea; }
+`;
+
+const Select = styled.select`
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #434651;
+  background: #2B2B43;
+  color: white;
+  cursor: pointer;
 `;
 
 const TableContainer = styled.div`
@@ -89,35 +118,84 @@ const PnlText = styled.span`
   font-weight: bold;
 `;
 
+const Pagination = styled.div`
+  max-width: 1000px;
+  margin: 20px auto 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+
+  button {
+    padding: 8px 16px;
+    background: #2B2B43;
+    border: 1px solid #434651;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:hover:not(:disabled) { background: #434651; }
+  }
+`;
+
 const History = () => {
+  // Data State
   const [trades, setTrades] = useState([]);
   const [stats, setStats] = useState({ totalPnl: 0, winRate: 0, totalTrades: 0, bestWin: 0 });
+  const [loading, setLoading] = useState(false);
 
+  // Filter State
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState(""); // "" | "BUY" | "SELL"
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // 1. Fetch Global Stats (Uses Portfolio API)
   useEffect(() => {
-    // We reuse getPortfolio because our backend returns 'trades' inside the user object
     getPortfolio().then(res => {
+      // Calculate Stats based on ALL trades (not just current page)
       const allTrades = res.data.trades || [];
-      setTrades(allTrades);
-      calculateStats(allTrades);
-    });
+      const sellTrades = allTrades.filter(t => t.type === 'SELL');
+      
+      const totalPnl = sellTrades.reduce((acc, t) => acc + (t.realizedPnl || 0), 0);
+      const wins = sellTrades.filter(t => (t.realizedPnl || 0) > 0).length;
+      const winRate = sellTrades.length > 0 ? (wins / sellTrades.length) * 100 : 0;
+      const bestWin = Math.max(0, ...sellTrades.map(t => t.realizedPnl || 0));
+
+      setStats({ totalPnl, winRate, totalTrades: sellTrades.length, bestWin });
+    }).catch(console.error);
   }, []);
 
-  const calculateStats = (data) => {
-    // Only look at SELL trades for PnL
-    const sellTrades = data.filter(t => t.type === 'SELL');
-    
-    const totalPnl = sellTrades.reduce((acc, t) => acc + (t.realizedPnl || 0), 0);
-    const wins = sellTrades.filter(t => (t.realizedPnl || 0) > 0).length;
-    const winRate = sellTrades.length > 0 ? (wins / sellTrades.length) * 100 : 0;
-    const bestWin = Math.max(0, ...sellTrades.map(t => t.realizedPnl || 0));
+  // 2. Fetch Paginated History (Uses new History API)
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        // Calls: /api/trade/history?page=1&limit=10&search=BTC&type=SELL
+        const res = await getTradeHistory({ 
+          page, 
+          limit: 10, 
+          search, 
+          type: filterType 
+        });
+        
+        setTrades(res.data.data);
+        setTotalPages(res.data.pagination.pages);
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setStats({
-      totalPnl,
-      winRate,
-      totalTrades: sellTrades.length,
-      bestWin
-    });
-  };
+    // Debounce search slightly to avoid too many API calls
+    const timeout = setTimeout(() => {
+      fetchHistory();
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [page, search, filterType]); 
 
   return (
     <Container>
@@ -141,14 +219,31 @@ const History = () => {
           </p>
         </StatCard>
         <StatCard>
-          <h3>Total Trades (Closed)</h3>
+          <h3>Closed Trades</h3>
           <p style={{ color: 'white' }}>{stats.totalTrades}</p>
         </StatCard>
         <StatCard>
-          <h3>Best Trade</h3>
+          <h3>Best Win</h3>
           <p style={{ color: '#26a69a' }}>+${stats.bestWin.toFixed(2)}</p>
         </StatCard>
       </StatsGrid>
+
+      {/* FILTERS & SEARCH */}
+      <FilterBar>
+        <SearchInput 
+          placeholder="Search Symbol (e.g. BTC)..." 
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }} 
+        />
+        <Select 
+          value={filterType} 
+          onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
+        >
+          <option value="">All Types</option>
+          <option value="BUY">Buys Only</option>
+          <option value="SELL">Sells Only</option>
+        </Select>
+      </FilterBar>
 
       {/* HISTORY TABLE */}
       <TableContainer>
@@ -160,10 +255,11 @@ const History = () => {
               <th>Type</th>
               <th>Price</th>
               <th>Qty</th>
+              <th>Total</th>
               <th>PnL</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ opacity: loading ? 0.5 : 1 }}>
             {trades.map(t => (
               <tr key={t.id}>
                 <td style={{ color: '#8892b0' }}>{new Date(t.createdAt).toLocaleString()}</td>
@@ -171,6 +267,7 @@ const History = () => {
                 <td><Badge type={t.type}>{t.type}</Badge></td>
                 <td>${t.price.toFixed(2)}</td>
                 <td>{t.quantity}</td>
+                <td>${t.totalCost.toFixed(2)}</td>
                 <td>
                   {t.type === 'SELL' ? (
                     <PnlText val={t.realizedPnl}>
@@ -182,16 +279,25 @@ const History = () => {
                 </td>
               </tr>
             ))}
-            {trades.length === 0 && (
+            {!loading && trades.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: 'gray' }}>
-                  No trades yet. Go make some money!
+                <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: 'gray' }}>
+                  No trades found matching your criteria.
                 </td>
               </tr>
             )}
           </tbody>
         </Table>
       </TableContainer>
+
+      {/* PAGINATION CONTROLS */}
+      {totalPages > 1 && (
+        <Pagination>
+          <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</button>
+          <span style={{ color: '#8892b0', fontSize: '14px' }}>Page {page} of {totalPages}</span>
+          <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</button>
+        </Pagination>
+      )}
 
     </Container>
   );
