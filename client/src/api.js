@@ -1,9 +1,9 @@
 import axios from "axios";
 
 export const API = axios.create({
-  baseURL: "http://localhost:8080/api",
+  // baseURL: "http://localhost:8080/api",
 
-  // baseURL: "https://ind-stocks-1.onrender.com/api",
+   baseURL: "https://ind-stocks-1.onrender.com/api",
   withCredentials: true, // send cookies
 });
 
@@ -57,3 +57,4 @@ export const deleteTrade = async (tradeId) => {
 export const resetTradeHistory = async () => {
   return await API.delete(`/trade/history/reset`);
 };
+// end of paths
